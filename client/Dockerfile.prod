@@ -1,0 +1,31 @@
+FROM node:10-slim AS client
+
+USER node
+
+RUN mkdir -p /home/node/app
+WORKDIR /home/node/app
+
+COPY --chown=node package*.json ./
+
+COPY --chown=node . .
+
+RUN npm i
+RUN npm run build
+
+
+FROM nginx:alpine
+
+WORKDIR /usr/share/nginx/html
+
+# TODO create nginx configuration
+# https://github.com/tiangolo/blog-posts/blob/master/react-in-docker/my-react-app/Dockerfile
+# https://github.com/tiangolo/node-frontend/blob/master/Dockerfile
+#RUN rm -rf ./*
+
+COPY --chown=node --from=client /home/node/app/build .
+
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
+
+#ENV REACT_APP_BASE_URL=http://localhost:3200/api
+#EXPOSE 3000
+#CMD ["npm", "start"]
